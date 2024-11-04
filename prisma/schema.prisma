@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(uuid())
+  name     String
+  email    String @unique
+  password String
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+model Course {
+  id               String   @id @default(uuid())
+  title            String
+  shortDescription String   @map("short_description")
+  description      String   @db.Text
+  creatorId        String   @map("creator_id")
+  tags             String[]
+
+  curriculum Curriculum[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+model Curriculum {
+  id    String @id @default(uuid())
+  title String
+
+  courseId           String               @map("course_id")
+  course             Course               @relation(references: [id], fields: [courseId], onDelete: Cascade, onUpdate: Cascade)
+  curriculumMaterial CurriculumMaterial[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+enum MaterialType {
+  PDF
+  VIDEO
+}
+
+model CurriculumMaterial {
+  id       String       @id @default(uuid())
+  title    String
+  duration Int
+  type     MaterialType
+
+  curriculumId String     @map("curriculum_id")
+  curriculum   Curriculum @relation(references: [id], fields: [curriculumId], onDelete: Cascade, onUpdate: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
